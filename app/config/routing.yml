@@ -1,0 +1,7 @@
+main_routing:
+    resource: "@AppBundle/Resources/config/front_routing.yml"
+    prefix:   /
+
+event_routing:
+    resource: "@AppBundle/Resources/config/event_routing.yml"
+    prefix:   /event

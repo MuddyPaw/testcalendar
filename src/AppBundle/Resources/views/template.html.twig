@@ -1,0 +1,20 @@
+{% extends "::base.html.twig" %}
+
+{% block meta %}
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Calendar app">
+    <meta name="keywords" content="calendar,events">
+    <meta name="author" content="Karalyos Erwin">
+{% endblock %}
+{% block title %}{% if title is defined and title %}{% trans with {'%title%' : title} from "app" %} %title% {% endtrans %}{% else %}{% trans %}Calendar{% endtrans %}{% endif %}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" type="text/css" href="{{ asset("vendor/bootstrap/css/bootstrap.min.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset('css/style.css') }}"/>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset("vendor/jquery-2.1.4.min.js") }}"></script>
+    {% block additions %}{% endblock %}
+{% endblock %}

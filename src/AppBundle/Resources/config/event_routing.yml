@@ -1,0 +1,14 @@
+event_add:
+    pattern: /add
+    defaults: { _controller: AppBundle:Event:add }
+event_edit:
+    pattern: /edit/{event}
+    defaults: { _controller: AppBundle:Event:edit }
+
+event_list:
+    pattern: /list
+    defaults: { _controller: AppBundle:Event:list }
+
+event_remove:
+    pattern: /remove/{event}
+    defaults: { _controller: AppBundle:Event:remove, event: null }

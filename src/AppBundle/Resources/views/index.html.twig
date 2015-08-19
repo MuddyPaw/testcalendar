@@ -1,0 +1,227 @@
+{% extends "AppBundle::template.html.twig" %}
+{% block additions %}
+    <script type='text/javascript' src="{{ asset('vendor/moment.min.js') }}"></script>
+    <script type="text/javascript" src="{{ asset('vendor/fullcalendar-2.4.0/fullcalendar.min.js') }}"></script>
+    <script type='text/javascript'
+            src="{{ asset('vendor/jquery-ui-1.11.4.custom/jquery-ui-1.11.4.custom/jquery-ui.min.js') }}"></script>
+    <script type='text/javascript'
+            src="{{ asset('vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script type='text/javascript'
+            src="{{ asset('vendor/timepicker/jquery.timepicker.js') }}"></script>
+    <link rel="stylesheet" type="text/css" href="{{ asset("vendor/timepicker/jquery.timepicker.css") }}"/>
+    <link rel="stylesheet" type="text/css" href="{{ asset("vendor/fullcalendar-2.4.0/fullcalendar.min.css") }}"/>
+    <script type='text/javascript'>
+
+        var lastEventStartTime;
+        var lastEventEndTime;
+
+
+        $(document).ready(function () {
+
+            $('.timepicker').timepicker();
+
+
+            $("#save-event-btn").click(function () {
+                var editForm = $("#add-edit-event-form");
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ path('event_add') }}',
+                    data: $(editForm).serialize(),
+                    dataType: 'json',
+                    success: function (result) {
+
+                        eventData = {
+                            title: $(editForm).find("#app_event_title").val(),
+                            start: lastEventStartTime,
+                            end: lastEventEndTime,
+                            description: $(editForm).find("#app_event_description").val()
+                        };
+                        $('#calendar').fullCalendar('renderEvent', eventData, true); // stick? = true
+                        $(editForm).find("input[type=text], textarea").val("");
+
+                        $('#calendar').fullCalendar('unselect');
+                        $("#fill-date-modal").modal('hide');
+                    }
+                });
+
+
+            });
+
+            $('#calendar-mini').fullCalendar({
+                theme: true,
+                header: {
+                    left: 'prev',
+                    center: '',
+                    right: "next"
+                },
+                editable: true,
+
+                // add event name to title attribute on mouseover
+                eventMouseover: function (event, jsEvent, view) {
+                    if (view.name !== 'agendaDay') {
+                        $(jsEvent.target).attr('title', event.title);
+                    }
+                }
+            });
+
+
+            $('#calendar').fullCalendar({
+                header: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'month,basicDay,basicWeek,agendaDay'
+                },
+
+                views: {
+                    month: {
+                        buttonText: 'Monthly'
+                    },
+                    agendaDay: {
+                        buttonText: 'Agenda Day'
+                    },
+                    basicWeek: {
+                        buttonText: 'Week'
+                    },
+                    basicDay: {
+                        buttonText: 'Day'
+                    }
+                },
+
+                selectable: true,
+                selectHelper: true,
+                select: function (start, end) {
+                    lastEventStartTime = start;
+                    lastEventEndTime = end;
+                    $("#app_event_startTime").val(start.format("hh:mma"))
+
+
+                    $("#app_event_endTime").val(end.format("hh:mma"))
+
+                    $("#app_event_endDate").val(end.format("MM/DD/YYYY"));
+                    $("#app_event_startDate").val(start.format("MM/DD/YYYY"));
+
+                    //TODO event.allDay === 'true' -> for type
+
+
+                    $("#fill-date-modal").modal('show');
+
+
+                },
+
+                eventResize: function (event) {
+                    var start = $.fullCalendar.formatDate(event.start, "yyyy-MM-dd HH:mm:ss");
+                    var end = $.fullCalendar.formatDate(event.end, "yyyy-MM-dd HH:mm:ss");
+                    $.ajax({
+                        url: "{{ path("event_remove") }}/" + event.id,// TODO change to the actual DB id and not to the fake id
+                        data: 'title=' + event.title + '&start=' + start + '&end=' + end + '&description=' + event.description,// TODO add event type
+                        type: "POST",
+                        success: function (json) {
+                            alert("Updated Successfully");
+                        }
+                    });
+                },
+                eventClick: function (event) {
+
+
+                    var decision = confirm("Do you really want to delete this event?");
+                    if (decision) {
+                        $.ajax({
+                            type: "POST",
+                            url: "{{ path("event_remove") }}/" + event.id //TODO change to the actual DB id and not to the fake id
+
+                        });
+                        $('#calendar2').fullCalendar('removeEvents', event.id);
+
+                    } else {
+                    }
+                },
+                editable: true,
+                eventLimit: true, // allow "more" link when too many events
+
+                eventRender: function (event, element) {
+                    element.find('.fc-title').after("<div class='event-description'>" + event.description + "</div>");
+                },
+                events: "{{ path("event_list") }}"
+            });
+
+        });
+
+    </script>
+{% endblock %}
+{% block body %}
+
+
+
+    <!-- Modal -->
+    <div id="fill-date-modal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">{% trans %}Add Event{% endtrans %}</h4>
+                </div>
+                <div class="modal-body">
+                    <form action="javascript:" method="post" novalidate="true" id="add-edit-event-form">
+                        {{ form_errors(form) }}
+                        <div class="inputbox">
+                            <div class="error">
+                                {{ form_errors(form.title) }}
+                            </div>
+                            {{ form_label(form.title) }}
+                            {{ form_widget(form.title, { 'attr' : { 'minlength' : 4, 'required' : 'true' } }) }}
+                        </div>
+                        <div class="inputbox">
+                            <div class="error">
+                                {{ form_errors(form.description) }}
+                            </div>
+                            {{ form_label(form.description) }}
+                            {{ form_widget(form.description ) }}
+                        </div>
+                        <div class="inputbox">
+                            <div class="error">
+                                {{ form_errors(form.startTime) }}
+                            </div>
+                            {{ form_label(form.startTime) }}
+                            {{ form_widget(form.startTime  , {'attr': {'class': 'timepicker'}}) }}
+                        </div>
+                        <div class="inputbox">
+                            <div class="error">
+                                {{ form_errors(form.endTime) }}
+                            </div>
+                            {{ form_label(form.endTime) }}
+                            {{ form_widget(form.endTime  , {'attr': {'class': 'timepicker'}}     ) }}
+                        </div>
+                        {{ form_widget(form.endDate) }}
+                        {{ form_widget(form.startDate) }}
+                        {{ form_rest(form) }}
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{% trans %}
+                        Close{% endtrans %}</button>
+                    <button type="button" class="btn btn-primary" id="save-event-btn">{% trans %}Save
+                        changes{% endtrans %}</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="">
+        <div class="row">
+            <div class="col-md-12 text-center">
+            <h1> Calendar App - Karalyos Erwin</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-3">
+                <div id='calendar-mini'></div>
+            </div>
+            <div class="col-md-9">
+                <div id='calendar'></div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

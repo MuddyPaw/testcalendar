@@ -1,0 +1,26 @@
+body {
+  font-family: "Lucida Grande", Helvetica, Arial, Verdana, sans-serif;
+  margin: 0; }
+
+#calendar-mini {
+  width: 200px;
+  margin: 0 auto;
+  font-size: 10px; }
+  #calendar-mini .fc-header-title h2 {
+    font-size: .9em;
+    white-space: normal !important; }
+  #calendar-mini .fc-view-month .fc-event, #calendar-mini .fc-view-agendaWeek .fc-event {
+    font-size: 0;
+    overflow: hidden;
+    height: 2px; }
+  #calendar-mini .fc-view-agendaWeek .fc-event-vert {
+    font-size: 0;
+    overflow: hidden;
+    width: 2px !important; }
+  #calendar-mini .fc-agenda-axis {
+    width: 20px !important;
+    font-size: .7em; }
+  #calendar-mini .fc-button-content {
+    padding: 0; }
+
+/*# sourceMappingURL=style.css.map */

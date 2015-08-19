@@ -1,0 +1,6 @@
+services:
+     app_bundle.event_service:
+         class: AppBundle\Service\EventService
+         arguments:
+              em: "@doctrine.orm.entity_manager"
+              container: "@service_container"
